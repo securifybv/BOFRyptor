@@ -1,0 +1,7 @@
+NtOpenProcess
+NtAllocateVirtualMemory
+NtWriteVirtualMemory
+NtCreateThreadEx
+NtWaitForSingleObject
+NtClose
+NtFreeVirtualMemory

